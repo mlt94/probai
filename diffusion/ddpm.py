@@ -26,7 +26,7 @@ class Diffusion:
         self.alphas_bar = torch.cumprod(self.alphas, dim=0) 
         self.diff_type = diff_type
         self.classifier = None 
-        assert diff_type in {'DDPM', 'DDPM-cg', 'DDPM-cFg'}, 'Invalid diffusion type'
+        assert diff_type in {"DDPM", 'DDPM-cg'}, 'Invalid diffusion type'
         print(f'Diffusion type: {diff_type}')
 
 
@@ -116,10 +116,9 @@ class Diffusion:
         if timesteps_to_save is not None:
             intermediates = []
         with torch.no_grad():
-            x = torch.randn((batch_size, 3, self.img_size, self.img_size)).to(self.device)
+            x = torch.randn((batch_size, 1, self.img_size, self.img_size)).to(self.device)
             for i in pbar:
                 t = (torch.ones(batch_size) * i).long().to(self.device)
-                # T-1, T-2, .... 0
                 x = self.p_sample(model, x, t, y)
                 if timesteps_to_save is not None and i in timesteps_to_save:
                     x_itermediate = (x.clamp(-1, 1) + 1) / 2

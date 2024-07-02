@@ -2,18 +2,13 @@
 #SBATCH --output=install.out
 #SBATCH --partition=brown
 #SBATCH --time=08:00:00
+#SBATCH --gres=gpu
 
-# Create a new Python virtual environment with Python 3.10
-module load Python/3.10.4-GCCcore-11.3.0
-python3.10 -m venv probai
+module load Anaconda3
 
-source probai/bin/activate
+conda create -n ddpm python=3.10.10
+source activate ddpm
 
-pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu117
-pip3 install matplotlib numpy tqdm tensorboard
-
-
-
-
-
+conda install pytorch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 pytorch-cuda=11.7 -c pytorch -c nvidia
+pip install matplotlib numpy tqdm tensorboard scipy einops
 

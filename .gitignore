@@ -1,0 +1,6 @@
+install.out
+/data/*
+/results/*
+/models/*
+/runs/*
+/weights/*

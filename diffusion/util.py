@@ -9,10 +9,10 @@ import numpy as np
 
 
 SEED = 1
-CLASS_LABELS = ['human', 'non-human', 'food', 'spell', 'side-facing']
-train_size = 40000
-val_size = 10000
-test_size = 1000
+CLASS_LABELS = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+train_size = 48000
+val_size = 6000
+test_size = 6000
 DATASET_SIZE = train_size + val_size + test_size
 
 def set_seed():
@@ -27,7 +27,7 @@ def set_seed():
 def prepare_dataloaders(batch_size=100, val_batch_size=32):
     transform = transforms.Compose([
         transforms.ToTensor(),                
-        transforms.Normalize((0.5,), (0.5,))  
+        transforms.Normalize((0.1307,), (0.3081,))
     ])
 
     
