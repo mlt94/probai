@@ -30,10 +30,22 @@ def prepare_dataloaders(batch_size=100, val_batch_size=32):
         transforms.Normalize((0.1307,), (0.3081,))
     ])
 
-    
-    dataset = datasets.MNIST(root='data', train=True, download=True, transform=transform)
+    train_dataset = datasets.MNIST(root='./data/', train=True,
+                                transform=transform,
+                                target_transform=transforms.Compose([
+                                lambda x:torch.LongTensor([x]), # or just torch.tensor
+                                lambda x:torch.nn.functional.one_hot(x,10)]),
+                                download=True)
+    train_size = int(0.8 * len(train_dataset))
+    val_size = len(train_dataset) - train_size
+    train_dataset, val_dataset = random_split(train_dataset, [train_size, val_size], generator=torch.Generator().manual_seed(42))
 
-    train_dataset, val_dataset, test_dataset = random_split(dataset, [train_size, val_size, test_size], generator=torch.Generator().manual_seed(SEED))
+    test_dataset = datasets.MNIST(root='./data/', train=False,
+                            transform=transform,
+                            target_transform=transforms.Compose([
+                            lambda x:torch.LongTensor([x]), # or just torch.tensor
+                            lambda x:torch.nn.functional.one_hot(x,10)]),
+                            download=True)
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=val_batch_size, shuffle=False)

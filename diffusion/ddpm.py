@@ -26,7 +26,7 @@ class Diffusion:
         self.alphas_bar = torch.cumprod(self.alphas, dim=0) 
         self.diff_type = diff_type
         self.classifier = None 
-        assert diff_type in {"DDPM", 'DDPM-cg'}, 'Invalid diffusion type'
+        assert diff_type in {"DDPM", 'DDPM-cg', "DDPM-cfg"}, 'Invalid diffusion type'
         print(f'Diffusion type: {diff_type}')
 
 
