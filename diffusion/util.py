@@ -11,8 +11,8 @@ import numpy as np
 SEED = 1
 CLASS_LABELS = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
 train_size = 48000
-val_size = 6000
-test_size = 6000
+val_size = 12000
+test_size = 10000
 DATASET_SIZE = train_size + val_size + test_size
 
 def set_seed():
@@ -30,28 +30,18 @@ def prepare_dataloaders(batch_size=100, val_batch_size=32):
         transforms.Normalize((0.1307,), (0.3081,))
     ])
 
-    train_dataset = datasets.MNIST(root='./data/', train=True,
-                                transform=transform,
-                                target_transform=transforms.Compose([
-                                lambda x:torch.LongTensor([x]), # or just torch.tensor
-                                lambda x:torch.nn.functional.one_hot(x,10)]),
-                                download=True)
-    train_size = int(0.8 * len(train_dataset))
-    val_size = len(train_dataset) - train_size
-    train_dataset, val_dataset = random_split(train_dataset, [train_size, val_size], generator=torch.Generator().manual_seed(42))
 
-    test_dataset = datasets.MNIST(root='./data/', train=False,
-                            transform=transform,
-                            target_transform=transforms.Compose([
-                            lambda x:torch.LongTensor([x]), # or just torch.tensor
-                            lambda x:torch.nn.functional.one_hot(x,10)]),
-                            download=True)
+    train_dataset = datasets.MNIST(root='data', train=True, download=True, transform=transform)
+    test_dataset = datasets.MNIST(root='data', train=False, download=True, transform=transform)
+
+    train_dataset, val_dataset = random_split(train_dataset, [train_size, val_size], generator=torch.Generator().manual_seed(SEED))
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=val_batch_size, shuffle=False)
     test_loader = DataLoader(test_dataset, batch_size=val_batch_size, shuffle=False)
 
     return train_loader, val_loader, test_loader
+
 
 
 def show(imgs, title=None, fig_titles=None, save_path=None): 

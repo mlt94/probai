@@ -6,9 +6,12 @@
 
 module load Anaconda3
 
-conda create -n ddpm python=3.10.10
+#conda create -n ddpm python=3.10.10
 source activate ddpm
 
-conda install pytorch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 pytorch-cuda=11.7 -c pytorch -c nvidia
-pip install matplotlib numpy tqdm tensorboard scipy einops
+#conda install pytorch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 pytorch-cuda=11.7 -c pytorch -c nvidia
+#pip install matplotlib numpy tqdm tensorboard scipy einops
+
+#pip install notebook ipython
+pip install jupyter
 

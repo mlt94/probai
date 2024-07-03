@@ -4,6 +4,7 @@
 #SBATCH --time=08:00:00
 #SBATCH --gres=gpu
 
+module load Anaconda3
+source activate ddpm
 
-
-python ddpm_train.py
+python /home/mlut/probai/diffusion/ddpm_train.py --cfg

@@ -4,3 +4,4 @@ install.out
 /models/*
 /runs/*
 /weights/*
+requirements.txt
