@@ -19,7 +19,7 @@ from ddpm import Diffusion
 from model import UNet
 from util import prepare_dataloaders
 
-SEED = 5
+SEED = 1
 
 def set_seed(seed=SEED):
     random.seed(seed)
@@ -52,14 +52,15 @@ def create_result_folders(experiment_name):
     os.makedirs(os.path.join("results", experiment_name), exist_ok=True)
 
 
-def train(device='cuda', cfg=True, T=500, img_size=16, input_channels=1, channels=32, time_dim=256,
+def train(device='cuda', cfg=True, T=500, input_channels=1, channels=32, time_dim=256,
           batch_size=100, lr=1e-2, num_epochs=50, experiment_name="DDPM-cfg", show=False):
     create_result_folders(experiment_name)
     train_loader, val_loader, test_loader = prepare_dataloaders(batch_size)
 
-    model = UNet(img_size=img_size, c_in=input_channels, c_out=input_channels, 
-                 time_dim=time_dim, channels=channels, device=device).to(device)
-    diffusion = Diffusion(T=T, beta_start=1e-4, beta_end=0.02, diff_type='DDPM-cfg',img_size=img_size, device=device)
+    model = UNet(c_in=input_channels, c_out=input_channels, 
+                time_dim=time_dim, channels=channels, num_classes=10, device=device).to(device)
+    
+    diffusion = Diffusion(T=T, beta_start=1e-4, beta_end=0.02, diff_type='DDPM-cfg', device=device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
     scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5, verbose=True)
 

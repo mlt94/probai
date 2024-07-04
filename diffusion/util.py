@@ -26,8 +26,9 @@ def set_seed():
 
 def prepare_dataloaders(batch_size=100, val_batch_size=32):
     transform = transforms.Compose([
-        transforms.ToTensor(),                
-        transforms.Normalize((0.1307,), (0.3081,))
+        transforms.Resize((24,24)),
+        transforms.ToTensor()
+        #transforms.Normalize((0.1307,), (0.3081,))
     ])
 
 

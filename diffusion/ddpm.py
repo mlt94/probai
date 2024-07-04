@@ -1,4 +1,5 @@
 import torch
+from IPython import embed
 from tqdm import tqdm
 import logging
 logging.basicConfig(format="%(asctime)s - %(levelname)s: %(message)s", level=logging.INFO, datefmt="%I:%M:%S")
@@ -7,7 +8,7 @@ import math
 import torch.nn.functional as F
 
 class Diffusion:
-    def __init__(self, T=500, beta_start=1e-4, beta_end=0.02, diff_type='DDPM-cfg', img_size=16,device="cuda"):
+    def __init__(self, T=500, beta_start=1e-4, beta_end=0.02, diff_type='DDPM-cfg', img_size=24,device="cuda"):
         """
         T : total diffusion steps (X_T is pure noise N(0,1))
         beta_start: value of beta for t=0
@@ -52,7 +53,7 @@ class Diffusion:
         return sqrt_alpha_bar * x + sqrt_one_minus_alpha_bar * noise, noise
     
 
-    def p_mean_std(self, model, x_t, t, y=None, guidance_scale=1.0):
+    def p_mean_std(self, model, x_t, t, y=None):
         """
         Calculate mean and std of p(x_{t-1} | x_t) using the reverse process and model
         """
@@ -60,14 +61,8 @@ class Diffusion:
         alpha_bar = self.alphas_bar[t][:, None, None, None] # match image dimensions 
         beta = self.betas[t][:, None, None, None] # match image dimensions
 
-        #this part performs the classifier-free conditioning
 
-        predicted_noise_uncond = model(x_t, t, None)
-        if y is not None:
-            predicted_noise_cond = model(x_t, t, y)
-            predicted_noise = (1 + guidance_scale) * predicted_noise_cond - guidance_scale * predicted_noise_uncond
-        else:
-            predicted_noise = predicted_noise_uncond
+        predicted_noise = model(x_t, t, y)
 
         mean = 1 / torch.sqrt(alpha) * (x_t - ((1 - alpha) / (torch.sqrt(1 - alpha_bar))) * predicted_noise) 
         std = torch.sqrt(beta)
@@ -96,7 +91,8 @@ class Diffusion:
             pbar = tqdm(reversed(range(1, self.T)), position=0, total=self.T-1)
         else :
             pbar = reversed(range(1, self.T))
-            
+
+    
         model.eval()
         if timesteps_to_save is not None:
             intermediates = []
@@ -105,6 +101,7 @@ class Diffusion:
             for i in pbar:
                 t = (torch.ones(batch_size) * i).long().to(self.device)
                 x = self.p_sample(model, x, t, y)
+
                 if timesteps_to_save is not None and i in timesteps_to_save:
                     x_itermediate = (x.clamp(-1, 1) + 1) / 2
                     x_itermediate = (x_itermediate * 255).type(torch.uint8)
