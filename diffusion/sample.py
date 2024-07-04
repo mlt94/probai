@@ -15,7 +15,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 set_seed()
 
 # Load model
-ddpm_cFg = Diffusion(img_size=24, T=500, beta_start=1e-4, beta_end=0.02, diff_type='DDPM-cfg', device=device)
+ddpm_cFg = Diffusion(img_size=24, T=500, beta_start=1e-4, beta_end=0.02, device=device)
 
 unet_ddpm_cFg = UNet(num_classes=10, device=device)
 unet_ddpm_cFg.eval()

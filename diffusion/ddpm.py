@@ -8,7 +8,7 @@ import math
 import torch.nn.functional as F
 
 class Diffusion:
-    def __init__(self, T=500, beta_start=1e-4, beta_end=0.02, diff_type='DDPM-cfg', img_size=24,device="cuda"):
+    def __init__(self, T=500, beta_start=1e-4, beta_end=0.02, img_size=24,device="cuda"):
         """
         T : total diffusion steps (X_T is pure noise N(0,1))
         beta_start: value of beta for t=0
@@ -25,19 +25,15 @@ class Diffusion:
         self.betas = self.get_betas().to(device)
         self.alphas = 1. - self.betas
         self.alphas_bar = torch.cumprod(self.alphas, dim=0) 
-        self.diff_type = diff_type
-        assert diff_type in {"DDPM-cfg"}, 'Invalid diffusion type'
-        print(f'Diffusion type: {diff_type}')
 
 
-    def get_betas(self, schedule='linear'):
-        if schedule == 'linear':
-            return torch.linspace(self.beta_start, self.beta_end, self.T)
+    def get_betas(self):
+        return torch.linspace(self.beta_start, self.beta_end, self.T) #standard linear scheduler; I am well aware that a cosine one could marginally improve performance, however, for this use case I estimate this is sufficient
     
     def q_sample(self, x, t):
         """
         x: input image (x0)
-        t: timestep: should be torch.tensor
+        t: timestep: 
 
         Forward diffusion process
         q(x_t | x_0) = sqrt(alpha_hat_t) * x0 + sqrt(1-alpha_hat_t) * N(0,1)
@@ -57,10 +53,9 @@ class Diffusion:
         """
         Calculate mean and std of p(x_{t-1} | x_t) using the reverse process and model
         """
-        alpha = self.alphas[t][:, None, None, None] # match image dimensions
-        alpha_bar = self.alphas_bar[t][:, None, None, None] # match image dimensions 
-        beta = self.betas[t][:, None, None, None] # match image dimensions
-
+        alpha = self.alphas[t][:, None, None, None]
+        alpha_bar = self.alphas_bar[t][:, None, None, None] 
+        beta = self.betas[t][:, None, None, None] 
 
         predicted_noise = model(x_t, t, y)
 

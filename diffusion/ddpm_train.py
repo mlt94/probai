@@ -52,17 +52,17 @@ def create_result_folders(experiment_name):
     os.makedirs(os.path.join("results", experiment_name), exist_ok=True)
 
 
-def train(device='cuda', cfg=True, T=500, input_channels=1, channels=32, time_dim=256,
-          batch_size=100, lr=1e-2, num_epochs=50, experiment_name="DDPM-cfg", show=False):
+def train(device='cuda', T=500, input_channels=1, channels=32, time_dim=256,
+          batch_size=100, lr=1e-2, num_epochs=30, experiment_name="DDPM-cfg", show=False):
     create_result_folders(experiment_name)
     train_loader, val_loader, test_loader = prepare_dataloaders(batch_size)
 
     model = UNet(c_in=input_channels, c_out=input_channels, 
                 time_dim=time_dim, channels=channels, num_classes=10, device=device).to(device)
     
-    diffusion = Diffusion(T=T, beta_start=1e-4, beta_end=0.02, diff_type='DDPM-cfg', device=device)
+    diffusion = Diffusion(T=T, beta_start=1e-4, beta_end=0.02, device=device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
-    scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5, verbose=True)
+    scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5, verbose=True) #Learning rate scheduler
 
     mse = nn.MSELoss()
 
@@ -77,15 +77,15 @@ def train(device='cuda', cfg=True, T=500, input_channels=1, channels=32, time_di
             images = images.to(device)
 
             labels = labels.to(device)
-            labels = torch.nn.functional.one_hot(labels, num_classes=10).float()
+            labels = torch.nn.functional.one_hot(labels, num_classes=10).float() #one-hot encode labels
 
-            #randomly discard labels as pr. step 3 in Algorithm 1 from paper
+            #randomly discard labels as pr. step 3 in Algorithm 1 from paper to enable unconditional training
             p_uncod = 0.1
             if torch.rand(1) < p_uncod:
                 labels = None
 
             t = diffusion.sample_timesteps(images.shape[0]).to(device)
-            x_t, noise = diffusion.q_sample(images, t)
+            x_t, noise = diffusion.q_sample(images, t) #forward pass (diffusion)
             predicted_noise = model(x_t, t, labels)
             loss = mse(noise, predicted_noise)
 
@@ -102,29 +102,24 @@ def train(device='cuda', cfg=True, T=500, input_channels=1, channels=32, time_di
             torch.save(model.state_dict(), os.path.join("weights", experiment_name, f"model.pth"))
             min_train_loss = epoch_loss
             
-        #Choose random int between 0-9 to input to p_sample_loop for generation with model
+        #Choose random int between 0-9 to input to p_sample_loop for generation with model, saved under "results/", denoising 
         y = torch.tensor([np.random.randint(0,10)], device=device)
         title = f'Epoch {epoch} with label:{CLASS_LABELS[y.item()]}'
         y = torch.nn.functional.one_hot(y, num_classes=10).float()
 
 
-        sampled_images = diffusion.p_sample_loop(model, batch_size=images.shape[0], y=y)
+        sampled_images = diffusion.p_sample_loop(model, batch_size=images.shape[0], y=y) 
         save_images(images=sampled_images, path=os.path.join("results", experiment_name, f"{epoch}.jpg"),
                     show=show, title=title)
     logger.close()
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--cfg', default=False, action='store_true')
-    args = parser.parse_args()
-    cfg = args.cfg
     exp_name = 'DDPM-cfg'
-
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f"Model will run on {device}, classifier-free guidance: {cfg} \n")
+    print(f"Model will run on {device}")
 
     set_seed()
-    train(cfg=cfg, experiment_name=exp_name, device=device)
+    train(experiment_name=exp_name, device=device)
 
 
 if __name__ == '__main__':

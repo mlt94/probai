@@ -9,7 +9,7 @@ import torch.nn.functional as F
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 timesteps_to_save = [1, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500]
 
-ddpm_cFg = Diffusion(img_size=24, T=500, beta_start=1e-4, beta_end=0.02, diff_type='DDPM-cfg', device=device)
+ddpm_cFg = Diffusion(img_size=24, T=500, beta_start=1e-4, beta_end=0.02, device=device)
 
 unet_ddpm_cFg = UNet(num_classes=10, device=device)
 unet_ddpm_cFg.eval()

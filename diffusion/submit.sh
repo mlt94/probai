@@ -7,4 +7,4 @@
 module load Anaconda3
 source activate ddpm
 
-python /home/mlut/probai/diffusion/ddpm_train.py --cfg
+python /home/mlut/probai/diffusion/ddpm_train.py
